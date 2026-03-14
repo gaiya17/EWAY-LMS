@@ -1,0 +1,11 @@
+node_modules/
+dist/
+.env
+.env.*
+!.env.example
+backend/generated/
+frontend/.env
+frontend/.env.*
+!.env.example
+coverage/
+*.log
