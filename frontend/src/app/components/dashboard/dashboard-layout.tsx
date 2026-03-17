@@ -10,7 +10,7 @@ interface DashboardLayoutProps {
   notificationCount?: number;
   breadcrumb?: string;
   activePage?: string;
-  onNavigate?: (page: string) => void;
+  onNavigate?: (page: string, data?: any) => void;
   onLogout?: () => void;
   onHelpClick?: () => void;
   showSystemStatus?: boolean;

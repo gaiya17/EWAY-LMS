@@ -12,6 +12,7 @@ import { LoginPage } from './components/login-page';
 import { RegistrationPage } from './components/registration-page';
 import { VerifyEmailPage } from './components/verify-email-page';
 import { ForgotPasswordFlow } from './components/forgot-password-flow';
+import { SetupPasswordPage } from './components/setup-password-page';
 import { StudentDashboardHome } from './components/dashboard/student-dashboard-home';
 import { StudentProfile } from './components/dashboard/student-profile';
 import { StudentIdCard } from './components/dashboard/student-id-card';
@@ -51,6 +52,9 @@ import { AdminReportGeneration } from './components/dashboard/admin-report-gener
 import { AdminViewReport } from './components/dashboard/admin-view-report';
 import { AdminActivityLog } from './components/dashboard/admin-activity-log';
 import { AdminMyProfile } from './components/dashboard/admin-my-profile';
+import { AdminApproveClasses } from './components/dashboard/admin-approve-classes';
+import { AdminNotificationsPage } from './components/dashboard/admin-notifications-page';
+import { AdminContentManagementPage } from './components/dashboard/admin-content-management';
 import { clearStoredAuth, getStoredAuth } from './lib/auth';
 
 type PageType =
@@ -59,6 +63,7 @@ type PageType =
   | 'register'
   | 'verify-email'
   | 'forgot-password'
+  | 'setup-password'
   | 'dashboard-student'
   | 'student-profile'
   | 'student-id-card'
@@ -96,7 +101,10 @@ type PageType =
   | 'admin-report-generation'
   | 'admin-view-report'
   | 'admin-activity-log'
-  | 'admin-my-profile';
+  | 'admin-my-profile'
+  | 'admin-approve-classes'
+  | 'admin-content'
+  | 'admin-notifications';
 
 function App() {
   const [currentPage, setCurrentPage] = useState<PageType>('home');
@@ -120,6 +128,8 @@ function App() {
     const pageParam = params.get('page');
     if (pageParam === 'verify-email') {
       setCurrentPage('verify-email');
+    } else if (pageParam === 'setup-password') {
+      setCurrentPage('setup-password');
     }
   }, []);
 
@@ -252,6 +262,12 @@ function App() {
       setCurrentPage('admin-my-profile');
     } else if (page === 'profile') {
       setCurrentPage('admin-my-profile');
+    } else if (page === 'approve-classes') {
+      setCurrentPage('admin-approve-classes');
+    } else if (page === 'admin-content') {
+      setCurrentPage('admin-content');
+    } else if (page === 'admin-notifications') {
+      setCurrentPage('admin-notifications');
     } else {
       // For now, show alert for other admin pages
       alert(`${page} - Coming Soon!`);
@@ -284,6 +300,7 @@ function App() {
       )}
       {currentPage === 'verify-email' && <VerifyEmailPage onLoginClick={handleLoginClick} />}
       {currentPage === 'forgot-password' && <ForgotPasswordFlow onBackToLogin={handleLoginClick} />}
+      {currentPage === 'setup-password' && <SetupPasswordPage onLoginClick={handleLoginClick} />}
       {currentPage === 'dashboard-student' && (
         <StudentDashboardHome onLogout={handleLogout} onNavigate={handleStudentNavigation} />
       )}
@@ -411,6 +428,15 @@ function App() {
       )}
       {currentPage === 'admin-my-profile' && (
         <AdminMyProfile onLogout={handleLogout} onNavigate={handleAdminNavigation} />
+      )}
+      {currentPage === 'admin-approve-classes' && (
+        <AdminApproveClasses onLogout={handleLogout} onNavigate={handleAdminNavigation} />
+      )}
+      {currentPage === 'admin-content' && (
+        <AdminContentManagementPage onLogout={handleLogout} onNavigate={handleAdminNavigation} />
+      )}
+      {currentPage === 'admin-notifications' && (
+        <AdminNotificationsPage onLogout={handleLogout} onNavigate={handleAdminNavigation} />
       )}
     </div>
   );

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { DashboardLayout } from './dashboard-layout';
 import { GlassCard } from '../glass-card';
 import { AIChat } from './ai-chat';
@@ -19,10 +19,11 @@ import {
   Eye,
   Calendar,
 } from 'lucide-react';
+import { apiRequest } from '../../lib/api';
 
 interface PurchaseClassesPageProps {
   onLogout?: () => void;
-  onNavigate?: (page: string) => void;
+  onNavigate?: (page: string, data?: any) => void;
 }
 
 type CourseType = 'online' | 'physical';
@@ -55,143 +56,43 @@ export function PurchaseClassesPage({ onLogout, onNavigate }: PurchaseClassesPag
   const [addedCourseName, setAddedCourseName] = useState('');
   const [previewCourse, setPreviewCourse] = useState<CourseData | null>(null);
 
-  const courses: CourseData[] = [
-    {
-      id: 1,
-      title: 'A/L Chemistry Complete Course 2026',
-      teacher: 'Mr. Amila Dasanayake',
-      schedule: 'Every Saturday 8:00 AM - 12:00 PM',
-      studentsEnrolled: 245,
-      rating: 4.8,
-      price: 16000,
-      type: 'online',
-      badge: 'popular',
-      thumbnail: 'https://images.unsplash.com/photo-1758685847747-597ce085906e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjaGVtaXN0cnklMjB0ZWFjaGVyJTIwY2xhc3Nyb29tfGVufDF8fHx8MTc3MTkxNzc1M3ww&ixlib=rb-4.1.0&q=80&w=1080',
-      category: 'science',
-      features: ['Live Sessions', 'Recorded Videos', 'Practice Papers', 'Past Papers'],
-      fullyBooked: false,
-    },
-    {
-      id: 2,
-      title: 'A/L Combined Mathematics - Theory & Applications',
-      teacher: 'Ms. Nadeeka Fernando',
-      schedule: 'Every Sunday 2:00 PM - 6:00 PM',
-      studentsEnrolled: 312,
-      rating: 4.9,
-      price: 18000,
-      type: 'physical',
-      badge: 'popular',
-      thumbnail: 'https://images.unsplash.com/photo-1653933606308-26e3aade9bb8?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtYXRoZW1hdGljcyUyMHRlYWNoZXIlMjB0ZWFjaGluZ3xlbnwxfHx8fDE3NzE5MTc3NTN8MA&ixlib=rb-4.1.0&q=80&w=1080',
-      category: 'maths',
-      features: ['Live Sessions', 'Recorded Videos', 'Practice Papers', 'Past Papers'],
-      fullyBooked: false,
-    },
-    {
-      id: 3,
-      title: 'A/L Physics - Advanced Level Masterclass',
-      teacher: 'Mr. Kasun Perera',
-      schedule: 'Every Friday 5:00 PM - 9:00 PM',
-      studentsEnrolled: 189,
-      rating: 4.7,
-      price: 15000,
-      type: 'online',
-      badge: 'new',
-      thumbnail: 'https://images.unsplash.com/photo-1767042286080-446afa2c78d8?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwaHlzaWNzJTIwbGFib3JhdG9yeSUyMGVxdWlwbWVudHxlbnwxfHx8fDE3NzE4OTQ1NzV8MA&ixlib=rb-4.1.0&q=80&w=1080',
-      category: 'science',
-      features: ['Live Sessions', 'Recorded Videos', 'Lab Demos', 'Past Papers'],
-      fullyBooked: false,
-    },
-    {
-      id: 4,
-      title: 'A/L Biology - Complete Course with Practicals',
-      teacher: 'Dr. Saman Silva',
-      schedule: 'Every Thursday 6:00 PM - 9:00 PM',
-      studentsEnrolled: 267,
-      rating: 4.9,
-      price: 17000,
-      type: 'online',
-      badge: 'popular',
-      thumbnail: 'https://images.unsplash.com/photo-1758206523705-666590ae0a66?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxiaW9sb2d5JTIwc2NpZW5jZSUyMGNsYXNzcm9vbXxlbnwxfHx8fDE3NzE5MTc3NTN8MA&ixlib=rb-4.1.0&q=80&w=1080',
-      category: 'science',
-      features: ['Live Sessions', 'Recorded Videos', 'Practice Papers', 'Past Papers'],
-      fullyBooked: false,
-    },
-    {
-      id: 5,
-      title: 'English Language & Literature Excellence',
-      teacher: 'Mrs. Priya Jayawardena',
-      schedule: 'Every Tuesday 4:00 PM - 6:00 PM',
-      studentsEnrolled: 178,
-      rating: 4.6,
-      price: 12000,
-      type: 'physical',
-      badge: 'none',
-      thumbnail: 'https://images.unsplash.com/photo-1566828791229-3804b533f840?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxlbmdsaXNoJTIwdGVhY2hlciUyMGJvb2tzfGVufDF8fHx8MTc3MTkxNzc1NHww&ixlib=rb-4.1.0&q=80&w=1080',
-      category: 'language',
-      features: ['Live Sessions', 'Recorded Videos', 'Essay Feedback', 'Practice Papers'],
-      fullyBooked: false,
-    },
-    {
-      id: 6,
-      title: 'Business Studies & Commerce Fundamentals',
-      teacher: 'Mr. Rohan Mendis',
-      schedule: 'Every Wednesday 6:00 PM - 9:00 PM',
-      studentsEnrolled: 198,
-      rating: 4.5,
-      price: 14000,
-      type: 'online',
-      badge: 'new',
-      thumbnail: 'https://images.unsplash.com/photo-1551459533-781bb4648897?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxidXNpbmVzcyUyMGNvbW1lcmNlJTIwZmluYW5jZXxlbnwxfHx8fDE3NzE5MTc3NTR8MA&ixlib=rb-4.1.0&q=80&w=1080',
-      category: 'commerce',
-      features: ['Live Sessions', 'Recorded Videos', 'Case Studies', 'Past Papers'],
-      fullyBooked: false,
-    },
-    {
-      id: 7,
-      title: 'Economics - Micro & Macro Analysis',
-      teacher: 'Ms. Dilini Ratnayake',
-      schedule: 'Every Monday 7:00 PM - 9:00 PM',
-      studentsEnrolled: 156,
-      rating: 4.7,
-      price: 13000,
-      type: 'online',
-      badge: 'none',
-      thumbnail: 'https://images.unsplash.com/photo-1592996522990-65ccd3032a61?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxlY29ub21pY3MlMjBidXNpbmVzcyUyMHN0dWRlbnRzfGVufDF8fHx8MTc3MTkxNzc1NHww&ixlib=rb-4.1.0&q=80&w=1080',
-      category: 'commerce',
-      features: ['Live Sessions', 'Recorded Videos', 'Practice Papers', 'Past Papers'],
-      fullyBooked: false,
-    },
-    {
-      id: 8,
-      title: 'Accounting & Finance - Professional Course',
-      teacher: 'Mr. Suresh Bandara',
-      schedule: 'Every Saturday 3:00 PM - 6:00 PM',
-      studentsEnrolled: 145,
-      rating: 4.8,
-      price: 15500,
-      type: 'physical',
-      badge: 'none',
-      thumbnail: 'https://images.unsplash.com/photo-1574607383077-47ddc2dc51c4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxhY2NvdW50aW5nJTIwY2FsY3VsYXRvciUyMGZpbmFuY2V8ZW58MXx8fHwxNzcxOTE3NzU1fDA&ixlib=rb-4.1.0&q=80&w=1080',
-      category: 'commerce',
-      features: ['Live Sessions', 'Recorded Videos', 'Practice Papers', 'Software Training'],
-      fullyBooked: false,
-    },
-    {
-      id: 9,
-      title: 'History - Ancient to Modern World',
-      teacher: 'Dr. Chandana Wijesinghe',
-      schedule: 'Every Sunday 10:00 AM - 1:00 PM',
-      studentsEnrolled: 300,
-      rating: 4.6,
-      price: 11000,
-      type: 'online',
-      badge: 'popular',
-      thumbnail: 'https://images.unsplash.com/photo-1722299547588-f3537d0770c5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxoaXN0b3J5JTIwc29jaWFsJTIwc3R1ZGllc3xlbnwxfHx8fDE3NzE5MTc3NTV8MA&ixlib=rb-4.1.0&q=80&w=1080',
-      category: 'language',
-      features: ['Live Sessions', 'Recorded Videos', 'Practice Papers', 'Documentary Access'],
-      fullyBooked: true,
-    },
-  ];
+  const [courses, setCourses] = useState<CourseData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchClasses = async () => {
+      try {
+        setLoading(true);
+        const response = await apiRequest<{ classes: any[] }>('/classes/approved');
+        
+        const mappedCourses: CourseData[] = response.classes.map((cls) => ({
+          id: cls.id,
+          title: cls.name,
+          teacher: `${cls.teacher.firstName} ${cls.teacher.lastName}`,
+          schedule: cls.schedule || 'Schedule TBD',
+          studentsEnrolled: 0,
+          rating: 5.0,
+          price: cls.fee,
+          type: 'online',
+          badge: 'none' as CourseBadge,
+          thumbnail: 'https://images.unsplash.com/photo-1758685847747-597ce085906e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjaGVtaXN0cnklMjB0ZWFjaGVyJTIwY2xhc3Nyb29tfGVufDF8fHx8MTc3MTkxNzc1M3ww&ixlib=rb-4.1.0&q=80&w=1080',
+          category: 'science' as CategoryType,
+          features: ['Live Sessions', 'Recorded Videos'],
+          fullyBooked: false,
+        }));
+        
+        setCourses(mappedCourses);
+      } catch (err) {
+        console.error('Failed to fetch classes:', err);
+        setError('Failed to load courses. Please try again later.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchClasses();
+  }, []);
 
   // Filter and sort courses
   const getFilteredCourses = () => {
@@ -405,7 +306,17 @@ export function PurchaseClassesPage({ onLogout, onNavigate }: PurchaseClassesPag
 
           {/* Courses Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredCourses.length === 0 ? (
+            {loading ? (
+               <div className="col-span-full text-center py-16">
+                 <div className="w-12 h-12 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                 <p className="text-white/60">Loading courses...</p>
+               </div>
+            ) : error ? (
+              <div className="col-span-full text-center py-16">
+                <div className="text-4xl mb-4">⚠️</div>
+                <p className="text-red-400">{error}</p>
+              </div>
+            ) : filteredCourses.length === 0 ? (
               <div className="col-span-full text-center py-16">
                 <div className="text-6xl mb-4">🔍</div>
                 <p className="text-white/60 text-lg">No courses found</p>

@@ -24,7 +24,7 @@ import {
 interface StudyPackPreviewPageProps {
   onLogout?: () => void;
   onNavigate?: (page: string, data?: any) => void;
-  packData?: any;
+  data?: any;
 }
 
 interface FileItem {
@@ -38,7 +38,7 @@ interface FileItem {
 export function StudyPackPreviewPage({
   onLogout,
   onNavigate,
-  packData,
+  data: packData,
 }: StudyPackPreviewPageProps) {
   const [isPlaying, setIsPlaying] = useState(false);
 

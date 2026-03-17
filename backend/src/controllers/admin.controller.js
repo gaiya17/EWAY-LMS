@@ -16,6 +16,16 @@ async function createUser(req, res, next) {
   }
 }
 
+async function getUsers(req, res, next) {
+  try {
+    const users = await adminService.getAllUsers();
+    res.status(200).json({ users });
+  } catch (error) {
+    next(error);
+  }
+}
+
 module.exports = {
-  createUser
+  createUser,
+  getUsers
 };

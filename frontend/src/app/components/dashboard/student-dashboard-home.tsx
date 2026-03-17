@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { DashboardLayout } from './dashboard-layout';
 import { GlassCard } from '../glass-card';
 import { AIChat } from './ai-chat';
@@ -17,6 +17,7 @@ import {
   Award,
   Target,
 } from 'lucide-react';
+import { apiRequest } from '../../lib/api';
 
 interface StudentDashboardHomeProps {
   onLogout?: () => void;
@@ -25,6 +26,22 @@ interface StudentDashboardHomeProps {
 
 export function StudentDashboardHome({ onLogout, onNavigate }: StudentDashboardHomeProps) {
   const [showGuide, setShowGuide] = useState(true);
+  const [classes, setClasses] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchMyClasses = async () => {
+      try {
+        const data = await apiRequest<{ classes: any[] }>('/classes/my-classes');
+        setClasses(data.classes);
+      } catch (err) {
+        console.error('Failed to fetch my classes', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchMyClasses();
+  }, []);
 
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -37,7 +54,7 @@ export function StudentDashboardHome({ onLogout, onNavigate }: StudentDashboardH
     {
       id: 'classes',
       title: 'My Classes',
-      description: '6 active courses',
+      description: `${classes.length} active courses`,
       icon: BookOpen,
       gradient: 'from-blue-500 to-indigo-600',
       bgColor: 'bg-blue-500/20',
@@ -124,7 +141,7 @@ export function StudentDashboardHome({ onLogout, onNavigate }: StudentDashboardH
   ];
 
   // Circular progress component
-  const CircularProgress = ({ percentage, size = 120, strokeWidth = 8, color = '#06B6D4' }) => {
+  const CircularProgress = ({ percentage, size = 120, strokeWidth = 8, color = '#06B6D4' }: { percentage: number, size?: number, strokeWidth?: number, color?: string }) => {
     const radius = (size - strokeWidth) / 2;
     const circumference = radius * 2 * Math.PI;
     const offset = circumference - (percentage / 100) * circumference;

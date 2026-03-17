@@ -21,6 +21,7 @@ app.use(morgan("dev"));
 
 const adminRoutes = require("./routes/admin.routes");
 const userRoutes = require("./routes/user.routes");
+const classRoutes = require("./routes/class.routes");
 
 app.get("/api/health", (req, res) => {
   res.status(200).json({
@@ -31,6 +32,7 @@ app.get("/api/health", (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/classes", classRoutes);
 
 app.use((req, res) => {
   res.status(404).json({

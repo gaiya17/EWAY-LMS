@@ -27,6 +27,12 @@ enum ResetTokenStatus {
   EXPIRED
 }
 
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 model Role {
   id        String   @id @default(cuid())
   code      RoleCode @unique
@@ -67,6 +73,7 @@ model StudentProfile {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   user         User     @relation(fields: [userId], references: [id])
+  enrollments  Enrollment[]
 }
 
 model TeacherProfile {
@@ -79,6 +86,9 @@ model TeacherProfile {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   user         User     @relation(fields: [userId], references: [id])
+  courses      Course[]
+  classes      Class[]
+  studyPacks   StudyPack[]
 }
 
 model StaffProfile {
@@ -143,4 +153,95 @@ model EmailVerificationToken {
   user       User     @relation(fields: [userId], references: [id])
 
   @@index([userId])
+}
+
+model Course {
+  id          String         @id @default(cuid())
+  name        String         @unique
+  description String?
+  status      ApprovalStatus @default(PENDING)
+  teacherId   String
+  teacher     TeacherProfile @relation(fields: [teacherId], references: [id])
+  classes     Class[]
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+}
+
+model Class {
+  id          String         @id @default(cuid())
+  courseId    String?
+  course      Course?        @relation(fields: [courseId], references: [id])
+  teacherId   String
+  teacher     TeacherProfile @relation(fields: [teacherId], references: [id])
+  name        String
+  description String?
+  status      ApprovalStatus @default(PENDING)
+  fee         Float
+  schedule    String?
+  enrollments Enrollment[]
+  studyPacks  StudyPack[]
+  assignments Assignment[]
+  notes       Note[]
+  links       ClassLink[]
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+}
+
+model Enrollment {
+  id        String         @id @default(cuid())
+  studentId String
+  student   StudentProfile @relation(fields: [studentId], references: [id])
+  classId   String
+  class     Class          @relation(fields: [classId], references: [id])
+  status    String         @default("ACTIVE")
+  joinedAt  DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  @@unique([studentId, classId])
+}
+
+model StudyPack {
+  id          String         @id @default(cuid())
+  classId     String
+  class       Class          @relation(fields: [classId], references: [id])
+  teacherId   String
+  teacher     TeacherProfile @relation(fields: [teacherId], references: [id])
+  name        String
+  description String?
+  status      ApprovalStatus @default(PENDING)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+}
+
+model Assignment {
+  id          String   @id @default(cuid())
+  classId     String
+  class       Class    @relation(fields: [classId], references: [id])
+  title       String
+  description String?
+  dueDate     DateTime?
+  fileUrl     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Note {
+  id          String   @id @default(cuid())
+  classId     String
+  class       Class    @relation(fields: [classId], references: [id])
+  title       String
+  content     String?
+  fileUrl     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ClassLink {
+  id          String   @id @default(cuid())
+  classId     String
+  class       Class    @relation(fields: [classId], references: [id])
+  title       String
+  url         String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }

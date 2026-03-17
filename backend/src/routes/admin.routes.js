@@ -12,6 +12,9 @@ router.use(authenticate);
 // Apply role check for ADMIN
 router.use(requireRole(["admin"]));
 
+// List Users
+router.get("/users", adminController.getUsers);
+
 // Create User (Teacher or Staff)
 router.post(
   "/users",

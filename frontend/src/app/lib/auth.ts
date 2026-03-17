@@ -88,6 +88,25 @@ export async function resetPassword(payload: {
   });
 }
 
+export async function verifySetupToken(payload: { email: string; token: string }) {
+  return apiRequest<{ message: string }>("/auth/verify-setup-token", {
+    method: "POST",
+    body: payload,
+  });
+}
+
+export async function setupPassword(payload: {
+  email: string;
+  token: string;
+  password: string;
+  confirmPassword: string;
+}) {
+  return apiRequest<{ message: string }>("/auth/setup-password", {
+    method: "POST",
+    body: payload,
+  });
+}
+
 export async function fetchCurrentUser(token: string) {
   return apiRequest<{ user: AuthUser }>("/auth/me", {
     method: "GET",

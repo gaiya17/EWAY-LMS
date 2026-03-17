@@ -62,11 +62,33 @@ const verifyEmailSchema = z.object({
   token: z.string().min(1, "Verification token is required")
 });
 
+const verifySetupTokenSchema = z.object({
+  email: z.string().email("Valid email is required").transform((value) => value.toLowerCase()),
+  token: z.string().min(32, "Invalid setup token")
+});
+
+const setupPasswordSchema = z.object({
+  email: z.string().email("Valid email is required").transform((value) => value.toLowerCase()),
+  token: z.string().min(32, "Invalid setup token"),
+  password: passwordRule,
+  confirmPassword: z.string()
+}).superRefine((data, ctx) => {
+  if (data.password !== data.confirmPassword) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Passwords do not match",
+      path: ["confirmPassword"]
+    });
+  }
+});
+
 module.exports = {
   registerSchema,
   loginSchema,
   forgotPasswordSchema,
   verifyResetCodeSchema,
   resetPasswordSchema,
-  verifyEmailSchema
+  verifyEmailSchema,
+  verifySetupTokenSchema,
+  setupPasswordSchema
 };

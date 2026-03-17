@@ -5,7 +5,9 @@ const {
   forgotPasswordSchema,
   verifyResetCodeSchema,
   resetPasswordSchema,
-  verifyEmailSchema
+  verifyEmailSchema,
+  verifySetupTokenSchema,
+  setupPasswordSchema
 } = require("../validators/auth.validator");
 
 function getRequestMeta(req) {
@@ -84,6 +86,26 @@ async function verifyEmail(req, res, next) {
   }
 }
 
+async function verifySetupToken(req, res, next) {
+  try {
+    const payload = verifySetupTokenSchema.parse(req.body);
+    const result = await authService.verifySetupToken(payload);
+    res.status(200).json(result);
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function setupPassword(req, res, next) {
+  try {
+    const payload = setupPasswordSchema.parse(req.body);
+    const result = await authService.setupPassword(payload, getRequestMeta(req));
+    res.status(200).json(result);
+  } catch (error) {
+    next(error);
+  }
+}
+
 module.exports = {
   register,
   login,
@@ -91,5 +113,7 @@ module.exports = {
   verifyResetCode,
   resetPassword,
   me,
-  verifyEmail
+  verifyEmail,
+  verifySetupToken,
+  setupPassword
 };

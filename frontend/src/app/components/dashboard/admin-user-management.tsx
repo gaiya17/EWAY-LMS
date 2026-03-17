@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { getStoredAuth } from '../../lib/auth';
 import { DashboardLayout } from './dashboard-layout';
 import { GlassCard } from '../glass-card';
 import { AddUserModal } from './add-user-modal';
@@ -85,117 +86,37 @@ export function AdminUserManagement({ onLogout, onNavigate }: AdminUserManagemen
   });
   const [showEditUserRoleDropdown, setShowEditUserRoleDropdown] = useState(false);
   const [showEditUserStatusDropdown, setShowEditUserStatusDropdown] = useState(false);
+  const [users, setUsers] = useState<User[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Sample user data
-  const allUsers: User[] = [
-    {
-      id: '1',
-      firstName: 'Kasun',
-      lastName: 'Perera',
-      email: 'kasun@email.com',
-      phone: '0771234567',
-      role: 'student',
-      status: 'active',
-      registeredDate: '2026-03-12',
-      lastLogin: '2 hours ago',
-      assignmentsSubmitted: 24,
-      attendanceRate: 95,
-    },
-    {
-      id: '2',
-      firstName: 'Nimal',
-      lastName: 'Silva',
-      email: 'nimal.silva@email.com',
-      phone: '0772345678',
-      role: 'teacher',
-      status: 'active',
-      registeredDate: '2025-11-08',
-      lastLogin: '1 day ago',
-      assignmentsSubmitted: 0,
-      attendanceRate: 100,
-    },
-    {
-      id: '3',
-      firstName: 'Amara',
-      lastName: 'Fernando',
-      email: 'amara@email.com',
-      phone: '0773456789',
-      role: 'student',
-      status: 'active',
-      registeredDate: '2026-02-15',
-      lastLogin: '3 hours ago',
-      assignmentsSubmitted: 18,
-      attendanceRate: 88,
-    },
-    {
-      id: '4',
-      firstName: 'Dilini',
-      lastName: 'Jayasinghe',
-      email: 'dilini.j@email.com',
-      phone: '0774567890',
-      role: 'staff',
-      status: 'active',
-      registeredDate: '2025-09-20',
-      lastLogin: '5 hours ago',
-      assignmentsSubmitted: 0,
-      attendanceRate: 98,
-    },
-    {
-      id: '5',
-      firstName: 'Ruwan',
-      lastName: 'Wijesinghe',
-      email: 'ruwan@email.com',
-      phone: '0775678901',
-      role: 'student',
-      status: 'inactive',
-      registeredDate: '2026-01-10',
-      lastLogin: '2 weeks ago',
-      assignmentsSubmitted: 12,
-      attendanceRate: 65,
-    },
-    {
-      id: '6',
-      firstName: 'Sanduni',
-      lastName: 'Rajapaksha',
-      email: 'sanduni.r@email.com',
-      phone: '0776789012',
-      role: 'teacher',
-      status: 'active',
-      registeredDate: '2025-10-05',
-      lastLogin: '6 hours ago',
-      assignmentsSubmitted: 0,
-      attendanceRate: 100,
-    },
-    {
-      id: '7',
-      firstName: 'Tharindu',
-      lastName: 'Gamage',
-      email: 'tharindu.g@email.com',
-      phone: '0777890123',
-      role: 'student',
-      status: 'suspended',
-      registeredDate: '2025-12-03',
-      lastLogin: '1 month ago',
-      assignmentsSubmitted: 5,
-      attendanceRate: 45,
-    },
-    {
-      id: '8',
-      firstName: 'Chamari',
-      lastName: 'Bandara',
-      email: 'chamari@email.com',
-      phone: '0778901234',
-      role: 'staff',
-      status: 'active',
-      registeredDate: '2025-08-15',
-      lastLogin: '1 hour ago',
-      assignmentsSubmitted: 0,
-      attendanceRate: 100,
-    },
-  ];
+  const fetchUsers = async () => {
+    try {
+      setIsLoading(true);
+      const auth = getStoredAuth();
+      const response = await fetch('/api/admin/users', {
+        headers: {
+          'Authorization': `Bearer ${auth?.token}`
+        }
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || 'Failed to fetch users');
+      setUsers(data.users);
+      setError(null);
+    } catch (err: any) {
+      console.error('Error fetching users:', err);
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
 
   // Filter and sort users
-  const filteredUsers = allUsers
+  const filteredUsers = users
     .filter((user) => {
       const matchesSearch =
         user.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -215,10 +136,10 @@ export function AdminUserManagement({ onLogout, onNavigate }: AdminUserManagemen
 
   // Calculate statistics
   const stats = {
-    total: allUsers.length,
-    students: allUsers.filter((u) => u.role === 'student').length,
-    teachers: allUsers.filter((u) => u.role === 'teacher').length,
-    staff: allUsers.filter((u) => u.role === 'staff').length,
+    total: users.length,
+    students: users.filter((u) => u.role === 'student').length,
+    teachers: users.filter((u) => u.role === 'teacher').length,
+    staff: users.filter((u) => u.role === 'staff').length,
   };
 
   const getRoleBadgeColor = (role: UserRole) => {
@@ -245,20 +166,6 @@ export function AdminUserManagement({ onLogout, onNavigate }: AdminUserManagemen
     }
   };
 
-  const handleAddUser = () => {
-    // Mock add user functionality
-    console.log('Adding new user:', newUser);
-    setShowAddModal(false);
-    setNewUser({
-      firstName: '',
-      lastName: '',
-      email: '',
-      phone: '',
-      role: 'student',
-      password: '',
-      confirmPassword: '',
-    });
-  };
 
   const handleViewUser = (user: User) => {
     setSelectedUser(user);
@@ -266,7 +173,7 @@ export function AdminUserManagement({ onLogout, onNavigate }: AdminUserManagemen
   };
 
   const handleEditUser = (userId: string) => {
-    const user = allUsers.find((u) => u.id === userId);
+    const user = users.find((u) => u.id === userId);
     if (user) {
       setSelectedUser(user);
       setEditUser({
@@ -290,7 +197,7 @@ export function AdminUserManagement({ onLogout, onNavigate }: AdminUserManagemen
   };
 
   const handleDeleteUser = (userId: string) => {
-    const user = allUsers.find((u) => u.id === userId);
+    const user = users.find((u) => u.id === userId);
     if (user) {
       setSelectedUser(user);
       setShowDeleteModal(true);
@@ -612,6 +519,7 @@ export function AdminUserManagement({ onLogout, onNavigate }: AdminUserManagemen
         <AddUserModal
           isOpen={showAddModal}
           onClose={() => setShowAddModal(false)}
+          onSuccess={fetchUsers}
         />
       )}
 

@@ -2,7 +2,7 @@ const { RoleCode, UserStatus } = require("@prisma/client");
 const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
 const prisma = require("../config/db");
-const { sendPasswordResetCode } = require("./auth.service");
+const { sendPasswordSetupLink } = require("./auth.service");
 const { logActivity } = require("../utils/logger");
 
 async function createUser(payload, requestMeta) {
@@ -101,7 +101,7 @@ async function createUser(payload, requestMeta) {
   // Wrap in try/catch so that if email fails (e.g. SMTP not configured), user creation still succeeds.
   let emailSent = true;
   try {
-    await sendPasswordResetCode({ email: user.email });
+    await sendPasswordSetupLink({ email: user.email });
   } catch (emailErr) {
     console.warn(`[admin.service] Could not send password reset email to ${user.email}:`, emailErr.message);
     emailSent = false;
@@ -119,6 +119,42 @@ async function createUser(payload, requestMeta) {
   };
 }
 
+async function getAllUsers() {
+  const users = await prisma.user.findMany({
+    include: {
+      role: true,
+      studentProfile: true,
+      teacherProfile: true,
+      staffProfile: true,
+      adminProfile: true
+    },
+    orderBy: {
+      createdAt: "desc"
+    }
+  });
+
+  return users.map(user => {
+    const profile = 
+      user.studentProfile || 
+      user.teacherProfile || 
+      user.staffProfile || 
+      user.adminProfile;
+
+    return {
+      id: user.id,
+      firstName: profile?.firstName || "",
+      lastName: profile?.lastName || "",
+      email: user.email,
+      phone: profile?.phone || "",
+      role: user.role.code.toLowerCase(),
+      status: user.status.toLowerCase(),
+      registeredDate: user.createdAt.toISOString(),
+      lastLogin: user.lastLoginAt ? user.lastLoginAt.toISOString() : null,
+    };
+  });
+}
+
 module.exports = {
-  createUser
+  createUser,
+  getAllUsers
 };

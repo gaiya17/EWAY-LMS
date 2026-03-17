@@ -7,8 +7,9 @@ interface DashboardHeaderProps {
   notificationCount?: number;
   breadcrumb?: string;
   onHelpClick?: () => void;
-  onNavigate?: (page: string) => void;
+  onNavigate?: (page: string, data?: any) => void;
   onLogout?: () => void;
+  showSystemStatus?: boolean;
 }
 
 export function DashboardHeader({
@@ -19,6 +20,7 @@ export function DashboardHeader({
   onHelpClick,
   onNavigate,
   onLogout,
+  showSystemStatus = false,
 }: DashboardHeaderProps) {
   const [showNotificationDropdown, setShowNotificationDropdown] = useState(false);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);

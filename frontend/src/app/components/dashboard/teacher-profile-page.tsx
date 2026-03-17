@@ -22,7 +22,7 @@ import {
 interface TeacherProfilePageProps {
   onLogout?: () => void;
   onNavigate?: (page: string, data?: any) => void;
-  teacherData?: any;
+  data?: any;
 }
 
 interface Course {
@@ -49,7 +49,7 @@ interface Review {
 export function TeacherProfilePage({
   onLogout,
   onNavigate,
-  teacherData,
+  data: teacherData,
 }: TeacherProfilePageProps) {
   const [showChatModal, setShowChatModal] = useState(false);
 

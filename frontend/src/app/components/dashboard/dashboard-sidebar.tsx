@@ -29,7 +29,7 @@ import ewayLogo from '../../../assets/5839cd6ca5cc93c08af5158653805fc6c7e77232.p
 interface SidebarProps {
   userRole: 'student' | 'teacher' | 'staff' | 'admin';
   activePage?: string;
-  onNavigate?: (page: string) => void;
+  onNavigate?: (page: string, data?: any) => void;
   onLogout?: () => void;
 }
 
@@ -82,6 +82,8 @@ export function DashboardSidebar({ userRole, activePage = 'dashboard', onNavigat
       return [
         { id: 'dashboard', label: 'Dashboard', icon: Home, section: 'main' },
         { id: 'user-management', label: 'User Management', icon: Users, section: 'main' },
+        { id: 'admin-content', label: 'Content Management', icon: BookOpen, section: 'main' },
+        { id: 'admin-notifications', label: 'Notifications', icon: Bell, section: 'main' },
         { id: 'chatbot-management', label: 'Chatbot Management', icon: MessageSquare, section: 'main' },
         { id: 'payment-verification', label: 'Payment Verification', icon: CreditCard, section: 'main' },
         { id: 'report-generation', label: 'Report Generation', icon: FileText, section: 'main' },

@@ -22,7 +22,7 @@ import {
 interface CheckoutPageProps {
   onLogout?: () => void;
   onNavigate?: (page: string, data?: any) => void;
-  courseData?: {
+  data?: {
     id: number;
     title: string;
     teacher: string;
@@ -35,7 +35,7 @@ interface CheckoutPageProps {
 type PaymentMethod = 'card' | 'bank';
 type PaymentStatus = 'idle' | 'processing' | 'success' | 'failed';
 
-export function CheckoutPage({ onLogout, onNavigate, courseData }: CheckoutPageProps) {
+export function CheckoutPage({ onLogout, onNavigate, data: courseData }: CheckoutPageProps) {
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('card');
   const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>('idle');
   const [showReceipt, setShowReceipt] = useState(false);

@@ -18,6 +18,7 @@ import {
   Database,
   Wifi,
   Circle,
+  Award,
 } from 'lucide-react';
 import {
   LineChart,
@@ -67,6 +68,7 @@ export function AdminDashboardHome({ onLogout, onNavigate }: AdminDashboardHomeP
   const quickActions = [
     { icon: UserPlus, label: 'Add User', color: 'from-blue-500 to-cyan-500' },
     { icon: FileText, label: 'View Reports', color: 'from-purple-500 to-pink-500' },
+    { icon: Award, label: 'Approve Classes', color: 'from-cyan-500 to-blue-500' },
     { icon: CheckCircle, label: 'Verify Payment', color: 'from-green-500 to-teal-500' },
     { icon: ClipboardCheck, label: 'Check Attendance', color: 'from-orange-500 to-yellow-500' },
   ];
@@ -292,6 +294,8 @@ export function AdminDashboardHome({ onLogout, onNavigate }: AdminDashboardHomeP
                       setIsAddUserModalOpen(true);
                     } else if (action.label === 'View Reports') {
                       onNavigate?.('reports');
+                    } else if (action.label === 'Approve Classes') {
+                      onNavigate?.('approve-classes');
                     } else if (action.label === 'Verify Payment') {
                       onNavigate?.('verify-payments');
                     } else if (action.label === 'Check Attendance') {

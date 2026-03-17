@@ -24,7 +24,7 @@ import {
 interface CheckoutPaymentPageProps {
   onLogout?: () => void;
   onNavigate?: (page: string, data?: any) => void;
-  packData?: any;
+  data?: any;
 }
 
 type PaymentStep = 'details' | 'payment' | 'success';
@@ -33,7 +33,7 @@ type PaymentMethod = 'card' | 'paypal' | 'bank';
 export function CheckoutPaymentPage({
   onLogout,
   onNavigate,
-  packData,
+  data: packData,
 }: CheckoutPaymentPageProps) {
   const [currentStep, setCurrentStep] = useState<PaymentStep>('payment');
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('card');

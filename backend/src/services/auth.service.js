@@ -379,13 +379,173 @@ async function verifyEmail(payload) {
   };
 }
 
+async function sendPasswordSetupLink(payload) {
+  const user = await prisma.user.findUnique({
+    where: { email: payload.email }
+  });
+
+  if (!user) {
+    return {
+      message: "If the account exists, a setup link has been sent"
+    };
+  }
+
+  // Invalidate old tokens
+  await prisma.passwordResetToken.updateMany({
+    where: {
+      userId: user.id,
+      status: ResetTokenStatus.PENDING
+    },
+    data: {
+      status: ResetTokenStatus.EXPIRED
+    }
+  });
+
+  // Generate a long secure token
+  const token = crypto.randomBytes(32).toString("hex");
+
+  await prisma.passwordResetToken.create({
+    data: {
+      userId: user.id,
+      token: token,
+      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours for initial setup
+    }
+  });
+
+  const frontendUrl = process.env.CLIENT_URL || 'http://localhost:5173';
+  const setupUrl = `${frontendUrl}/?page=setup-password&token=${token}&email=${encodeURIComponent(user.email)}`;
+
+  await sendMail({
+    to: user.email,
+    subject: "Welcome to EWAY LMS - Set Your Password",
+    text: `Welcome to EWAY LMS! Please set your password by clicking the following link: ${setupUrl}`,
+    html: `
+      <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2>Welcome to EWAY LMS</h2>
+        <p>Your account has been created by an administrator. Please click the button below to set your password and access your dashboard.</p>
+        <div style="margin: 30px 0;">
+          <a href="${setupUrl}" style="background-color: #6366f1; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold;">Set My Password</a>
+        </div>
+        <p>Or copy and paste this link into your browser:</p>
+        <p style="word-break: break-all; color: #6366f1;">${setupUrl}</p>
+        <p>This link will expire in 24 hours.</p>
+      </div>
+    `
+  });
+
+  return {
+    message: "If the account exists, a setup link has been sent"
+  };
+}
+
+async function verifySetupToken(payload) {
+  const user = await prisma.user.findUnique({
+    where: { email: payload.email }
+  });
+
+  if (!user) {
+    const error = new Error("Invalid setup link");
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const resetToken = await prisma.passwordResetToken.findFirst({
+    where: {
+      userId: user.id,
+      token: payload.token,
+      status: ResetTokenStatus.PENDING,
+      expiresAt: {
+        gt: new Date()
+      }
+    }
+  });
+
+  if (!resetToken) {
+    const error = new Error("Invalid or expired setup link");
+    error.statusCode = 400;
+    throw error;
+  }
+
+  return {
+    message: "Setup token verified"
+  };
+}
+
+async function setupPassword(payload, requestMeta) {
+  const user = await prisma.user.findUnique({
+    where: { email: payload.email }
+  });
+
+  if (!user) {
+    const error = new Error("Invalid setup request");
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const resetToken = await prisma.passwordResetToken.findFirst({
+    where: {
+      userId: user.id,
+      token: payload.token,
+      status: ResetTokenStatus.PENDING,
+      expiresAt: {
+        gt: new Date()
+      }
+    }
+  });
+
+  if (!resetToken) {
+    const error = new Error("Invalid or expired setup link");
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const passwordHash = await hashPassword(payload.password);
+
+  await prisma.$transaction([
+    prisma.user.update({
+      where: { id: user.id },
+      data: { passwordHash }
+    }),
+    prisma.passwordResetToken.update({
+      where: { id: resetToken.id },
+      data: { status: ResetTokenStatus.USED }
+    }),
+    prisma.passwordResetToken.updateMany({
+      where: {
+        userId: user.id,
+        status: ResetTokenStatus.PENDING
+      },
+      data: {
+        status: ResetTokenStatus.EXPIRED
+      }
+    })
+  ]);
+
+  await logActivity({
+    userId: user.id,
+    action: "AUTH_SETUP_PASSWORD",
+    entityType: "USER",
+    entityId: user.id,
+    description: "User completed initial password setup",
+    ipAddress: requestMeta.ipAddress,
+    userAgent: requestMeta.userAgent
+  });
+
+  return {
+    message: "Password set successfully. You can now log in."
+  };
+}
+
 module.exports = {
   seedBaseRoles,
   registerStudent,
   login,
   sendPasswordResetCode,
+  sendPasswordSetupLink,
   verifyResetCode,
+  verifySetupToken,
   resetPassword,
+  setupPassword,
   getCurrentUser,
   verifyEmail
 };

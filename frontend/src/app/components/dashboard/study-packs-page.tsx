@@ -19,7 +19,7 @@ import {
 
 interface StudyPacksPageProps {
   onLogout?: () => void;
-  onNavigate?: (page: string) => void;
+  onNavigate?: (page: string, data?: any) => void;
 }
 
 interface StudyPack {
