@@ -157,10 +157,8 @@ npm install
 cd ../backend
 npm install
 3. Run the project
-# Backend
-npm start
-# Frontend
-npm start
+Backend : npm start
+Frontend : npm start
 
 👨‍💻 Author
 
