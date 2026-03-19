@@ -156,7 +156,7 @@ cd frontend
 npm install
 cd ../backend
 npm install
-3. Run the project
+3. Run the project 
 Backend : npm start
 Frontend : npm start
 
